@@ -3,28 +3,96 @@ title: "Practical Machine Learning Course Project"
 author: "Roberto Diaz Ortega"
 date: "20/6/2017"
 output: html_document
+keep_md: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Background
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <http://groupware.les.inf.puc-rio.br/har> (see the section on the Weight Lifting Exercise Dataset).
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Getting Data
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+The first step to perfom the study is get the data from the provided Urls:
+```{R}
+trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
 
-```{r cars}
-summary(cars)
+train_complete_dataset <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))
+test_complete_dataset <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
+
+dim(train_complete_dataset)
+dim(test_complete_dataset)
+
+colSums(is.na(train_complete_dataset))
+
 ```
 
-## Including Plots
+## Data Cleaning
+As it can be observed there are a lot of columns that are NA, so the datasets will be cleaned in order to remove all empty columns and data. Additionally some columns not neccessary for the study are also removed:
 
-You can also embed plots, for example:
+```{R}
+#Cleaning training dataset
+empty_data <- is.na(train_complete_dataset)
+columns_to_delete <- which(colSums(empty_data) > 1900) #remove columns with >=10%  of NA
+train_complete_dataset <- train_complete_dataset[, -columns_to_delete]
+train_complete_dataset <- train_complete_dataset[-c(1:7)]
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+#Cleaning testing dataset
+empty_data <- is.na(test_complete_dataset)
+columns_to_delete <- which(colSums(empty_data) > 2) #remove columns with >=10% of NA
+test_complete_dataset <- test_complete_dataset[, -columns_to_delete]
+test_complete_dataset <- test_complete_dataset[-c(1:7)]
+
+dim(train_complete_dataset)
+dim(test_complete_dataset)
+colSums(is.na(train_complete_dataset))
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Preparing the prediction dataset
+In order to perform a cross validation the 70% of the train dataset will be used to create the model and the rest 30% will be use to validate the model:
+
+```{R}
+library(caret)
+set.seed(13579)
+train_dataset_indexs <- createDataPartition(y=train_complete_dataset$classe,p=.70,list=F)
+
+train_dataset <- train_complete_dataset[train_dataset_indexs,]
+validate_dataset <- train_complete_dataset[-train_dataset_indexs,]
+
+```
+## Modeling
+Due to in the guideline do not mention anything about the modeling method, in this case we are going to use the random forest model as following:
+```{R}
+library(randomForest)
+model <- randomForest(classe~.,data=train_dataset)
+model
+```
+After running the Random Forest, the obtained model has an out of the bag error rate of 0.53% and taking a quick look to the confusion matrix it can be observed how the model has a quite good behaviour classifing the training input dataset. In the following plot is showed the most importance variables for the model:
+
+```{R}
+varImpPlot(model,type=2)
+```
+
+##Validation
+
+With the model created is time to validate it using the validation_dataset to predict the classe. Following the confussion matrix shows that the models works very good with the validation_dataset:
+```{R}
+predictions=predict(model,newdata=validate_dataset)
+confusionMatrix(predictions,validate_dataset$classe)
+```
+
+## Predictions
+
+With a validated model we only have to apply the model to the prediction dataset and classify the testing_complete_dataset
+
+```{R}
+predictions=predict(model,newdata=test_complete_dataset)
+predictions
+```
+
+##Conclusions
+This project has shown the use of machine learning to automatically classify a dataset based on the data characteristics. Initially some cleaning task have been applied to the test dataset. Then from the training dataset a predictor Random Forest model has been created. According to this model the predictor has an error of 0.53%. After the model creation, this model has been applied to a testing dataset in order to predict the values.
