@@ -134,9 +134,11 @@ $(document).ready(function () {
 testUrl &lt;- &quot;http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;
 
 train_complete_dataset &lt;- read.csv(url(trainUrl), na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;))
-test_complete_dataset &lt;- read.csv(url(testUrl), na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;))
-
-dim(train_complete_dataset)</code></pre>
+test_complete_dataset &lt;- read.csv(url(testUrl), na.strings=c(&quot;NA&quot;,&quot;#DIV/0!&quot;,&quot;&quot;))</code></pre>
+</div>
+<div id="data-cleaning" class="section level2">
+<h2>Data Cleaning</h2>
+<pre class="r"><code>dim(train_complete_dataset)</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
 <pre class="r"><code>dim(test_complete_dataset)</code></pre>
 <pre><code>## [1]  20 160</code></pre>
@@ -249,9 +251,6 @@ dim(train_complete_dataset)</code></pre>
 ##                        0                        0                        0 
 ##                   classe 
 ##                        0</code></pre>
-</div>
-<div id="data-cleaning" class="section level2">
-<h2>Data Cleaning</h2>
 <p>As it can be observed there are a lot of columns that are NA, so the datasets will be cleaned in order to remove all empty columns and data. Additionally some columns not neccessary for the study are also removed:</p>
 <pre class="r"><code>#Cleaning training dataset
 empty_data &lt;- is.na(train_complete_dataset)
