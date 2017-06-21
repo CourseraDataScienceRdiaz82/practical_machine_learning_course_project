@@ -22,15 +22,15 @@ testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
 
 train_complete_dataset <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))
 test_complete_dataset <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
-
-dim(train_complete_dataset)
-dim(test_complete_dataset)
-
-colSums(is.na(train_complete_dataset))
-
 ```
 
 ## Data Cleaning
+
+```{R}
+dim(train_complete_dataset)
+dim(test_complete_dataset)
+colSums(is.na(train_complete_dataset))
+```
 As it can be observed there are a lot of columns that are NA, so the datasets will be cleaned in order to remove all empty columns and data. Additionally some columns not neccessary for the study are also removed:
 
 ```{R}
